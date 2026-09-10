@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+	{% load static %}
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>{% block title %}Slappers n Sizzlers{% endblock %}</title>
+
+		<!-- Google Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Pacifico&family=Inter:wght@400;500;600;700;800&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Remix Icons -->
+		<link
+			href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css"
+			rel="stylesheet"
+		/>
+
+		<!-- Project CSS -->
+		<link rel="stylesheet" href="{% static 'css/styles.css' %}" />
+		{% block extra_css %}{% endblock %}
+	</head>
+
+	<body>
+		<header class="main-header">
+			<nav class="navbar">
+				<!-- Brand: CSS text, no image file needed -->
+				<div class="nav-left">
+					<a href="/">
+						<img
+							src="{% static 'img/logo.png' %}"
+							alt="Slappers n Sizzlers"
+							class="brand-logo"
+						/>
+					</a>
+				</div>
+
+				<div class="nav-center">
+					<a href="/menu/" class="nav-link">Menu</a>
+					<a href="/orders/" class="nav-link">My Orders</a>
+					<a href="#about" class="nav-link">About</a>
+				</div>
+
+				<div class="nav-right">
+					{% if user.is_authenticated %}
+					<span class="nav-greeting"
+						>Hi, {{ user.first_name|default:user.username }}</span
+					>
+					{# logout must be a POST, not a link: a GET link could be triggered by any third-party page (e.g. a hidden <img src="/accounts/logout/">), silently logging users out — that's a CSRF attack. A POST form + csrf_token can only be submitted from our own pages. #}
+					<form method="post" action="{% url 'accounts.logout' %}" class="logout-form">
+						{# hidden token proving this POST originated from a page WE rendered; CsrfViewMiddleware rejects the request with 403 without it #}
+						{% csrf_token %}
+						<button type="submit" class="nav-link link-button">Sign Out</button>
+					</form>
+					{% else %}
+					<a href="/accounts/login/" class="nav-link">Sign In</a>
+					{% endif %}
+
+					<a href="/menu/" class="btn-primary">Order Now</a>
+
+					<a href="/cart/" class="icon-btn cart-btn" aria-label="Cart">
+						<i class="ri-shopping-cart-line" style="font-size: 1.4rem"></i>
+						{# cart_count exists on EVERY page because cart.context_processors.cart_count is registered in settings.TEMPLATES — no view passes it; remove that registration and this renders as if the cart were empty. The if hides the badge at zero: an empty red "0" bubble reads as an error, absence reads as "nothing yet" #}
+						{% if cart_count %}
+						<span class="cart-badge">{{ cart_count }}</span>
+						{% endif %}
+					</a>
+
+					<button
+						class="icon-btn menu-toggle"
+						aria-label="Toggle menu"
+						aria-expanded="false"
+					>
+						<i class="ri-menu-line icon-menu" style="font-size: 1.4rem"></i>
+						<i
+							class="ri-close-line icon-close"
+							style="font-size: 1.4rem; display: none"
+						></i>
+					</button>
+				</div>
+			</nav>
+
+			<div class="mobile-drawer" aria-hidden="true" id="mobile-drawer">
+				<div class="mobile-drawer-links">
+					<a href="/menu/" class="nav-link">Menu</a>
+					<a href="/orders/" class="nav-link">My Orders</a>
+					<a href="#about" class="nav-link">About</a>
+				</div>
+				<div class="mobile-drawer-actions">
+					{% if user.is_authenticated %}
+					{# same CSRF reasoning as the navbar: logout only via POST + token #}
+					<form method="post" action="{% url 'accounts.logout' %}" class="logout-form">
+						{# anti-forgery token — POST is rejected with 403 without it #}
+						{% csrf_token %}
+						<button type="submit" class="btn-secondary link-button">Sign Out</button>
+					</form>
+					{% else %}
+					<a href="/accounts/login/" class="btn-secondary">Sign In</a>
+					{% endif %}
+					<a href="/menu/" class="btn-primary drawer-order-btn">Order Now</a>
+				</div>
+			</div>
+		</header>
+
+		{% if messages %}
+		<div class="messages-container">
+			{% for message in messages %}
+			<div class="alert alert-{{ message.tags }}">{{ message }}</div>
+			{% endfor %}
+		</div>
+		{% endif %}
+
+		<main>{% block content %}{% endblock content %}</main>
+
+		<footer class="site-footer" id="about">
+			<div class="footer-container">
+				<div class="footer-brand">
+					<div class="brand-logo">
+						<a href="/">
+							<img
+								src="{% static 'img/logo.png' %}"
+								alt="Slappers n Sizzlers"
+								class="brand-logo"
+							/>
+						</a>
+					</div>
+					<p>
+						Your favorite food truck, now with online ordering. Skip the queue
+						and enjoy delicious food!
+					</p>
+				</div>
+
+				<div class="footer-links">
+					<h4>Quick Links</h4>
+					<a href="/menu/">Menu</a>
+					<a href="/orders/">My Orders</a>
+					<a href="#">Help</a>
+					<a href="#">T&Cs</a>
+				</div>
+
+				<div class="footer-contact">
+					<h4>Contact Us</h4>
+					<p><i class="ri-phone-line"></i> +27 123 456 789</p>
+					<p><i class="ri-mail-line"></i> hello@slappersnsizzlers.co.za</p>
+					<p><i class="ri-map-pin-line"></i> Cape Town, South Africa</p>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<p>&copy; 2024 Slappers n Sizzlers. All rights reserved.</p>
+				<div class="footer-socials">
+					<a href="#"><i class="ri-facebook-fill"></i></a>
+					<a href="#"><i class="ri-instagram-line"></i></a>
+					<a href="#"><i class="ri-twitter-x-line"></i></a>
+				</div>
+			</div>
+		</footer>
+
+		<script src="{% static 'js/menu.js' %}"></script>
+		{% block extra_js %}{% endblock %}
+	</body>
+</html>
