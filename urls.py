@@ -22,16 +22,12 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
-    # include() splices accounts/urls.py in under this prefix — Django strips 'accounts/' off the path and hands the remainder to the accounts app to match; keeps each app's routes self-contained
     path('accounts/', include('accounts.urls')),
-    # /menu/ prefix for the menu app — base.html already links to /menu/, and 'menu.index' is the post-signup destination in accounts/views.py
     path('menu/', include('menu.urls')),
-    # /cart/ prefix — the exact path base.html's cart icon has pointed at since day one; the icon stops 404ing the moment this line exists
     path('cart/', include('cart.urls')),
-    # /orders/ — the last of the four paths base.html promised on day one; with this line the whole navbar finally resolves
     path('orders/', include('orders.urls')),
+    path('staff/', include('staff.urls')),
 ]
 
-# Serve media files during development
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
